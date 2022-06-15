@@ -1,8 +1,8 @@
-FROM node:10 AS server-build
-WORKDIR /root/
-COPY --from=ui-build /usr/src/app/myapp ./myapp
+FROM node:14-alpine AS server-build
+COPY . /usr/src/myapp/
+WORKDIR /usr/src/myapp/
 COPY ./package*.json ./myapp/
-RUN cd api && npm install
+RUN cd  myapp && npm install
 COPY ./index.js ./myapp/
 
 EXPOSE 3000
