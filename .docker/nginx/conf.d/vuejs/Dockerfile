@@ -1,7 +1,7 @@
 # Server Ubuntu
 FROM ubuntu:latest as ubuntuServer
 USER root
-COPY .. /myserver/www
+COPY ../.. /myserver/www
 WORKDIR /myserver/www
 #RUN cd /myserver/www
 #RUN apt-get update
