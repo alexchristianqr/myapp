@@ -10,6 +10,13 @@ docker build -t myapp .
 docker run -dp 3000:3000 myapp
 ```
 
+## Run with docker-compose
+
+```bash
+# Crear imagen con docker
+docker-compose up -d --build
+```
+
 ## Running with Docker for AWS ECR
 ```bash
 // Ejemplo #1
