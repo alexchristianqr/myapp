@@ -3,6 +3,5 @@ node_modules
 dist
 /documentation/*
 /node_modules/*
-/dist/*
 .idea
 package-lock.json
