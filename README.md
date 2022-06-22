@@ -17,6 +17,7 @@ docker run -dp 3000:3000 myapp
 docker context create ecs myecscontext
 docker context ls
 docker context use myecscontext
+docker context use default # En caso de error rollback al contexto por defecto
 
 # Actualizar imagen
 docker compose up
