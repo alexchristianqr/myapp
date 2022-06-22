@@ -10,9 +10,8 @@ docker build -t myapp .
 docker run -dp 3000:3000 myapp
 ```
 
-## Run with docker-compose
+## Run with docker-compose with docker ECS
 
-/
 ```bash
 # Docker ECS
 docker context create ecs myecscontext
@@ -25,6 +24,16 @@ docker compose down
 
 # Crear imagen con docker --context myecscontext
 docker-compose up -d --build
+docker-compose up -d --build --context myecscontext
+docker-compose up --context myecscontext
+
+# Ver registros de aplicaciones
+docker compose logs
+docker compose --project-name PROJECT logs
+docker compose --file /path/to/docker-compose.yaml logs
+
+# Imágenes privadas de Docker
+docker secret create dockerhubAccessToken token.json
 ```
 
 ## Running with Docker for AWS ECR
