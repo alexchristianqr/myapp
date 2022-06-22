@@ -1,7 +1,7 @@
 # Server Ubuntu
 FROM ubuntu:latest as ubuntuServer
 USER root
-COPY ../.. /myserver/www
+COPY . /myserver/www
 WORKDIR /myserver/www
 #RUN cd /myserver/www
 #RUN apt-get update
@@ -15,7 +15,7 @@ WORKDIR /myserver/www
 FROM nginx:stable-alpine as nginxServer
 RUN rm -rf /usr/share/nginx/html/*
 COPY --from=ubuntuServer /myserver/www/.docker/nginx/general /etc/nginx/general/
-COPY --from=ubuntuServer /myserver/www/.docker/nginx/conf.d /etc/nginx/conf.d/
+COPY --from=ubuntuServer /myserver/www/.docker/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=ubuntuServer /myserver/www/dist /usr/share/nginx/html/dist/
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
