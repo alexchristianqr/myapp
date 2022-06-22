@@ -8,3 +8,6 @@ services:
     restart: always
     ports:
       - '3000:3000'
+  worker:
+    image: mycompany/privateimage
+    x-aws-pull_credentials: "arn:aws:secretsmanager:eu-west-3:12345:secret:DockerHubAccessToken"

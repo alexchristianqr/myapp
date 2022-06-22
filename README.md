@@ -12,8 +12,18 @@ docker run -dp 3000:3000 myapp
 
 ## Run with docker-compose
 
+/
 ```bash
-# Crear imagen con docker
+# Docker ECS
+docker context create ecs myecscontext
+docker context ls
+docker context use myecscontext
+
+# Actualizar imagen
+docker compose up
+docker compose down
+
+# Crear imagen con docker --context myecscontext
 docker-compose up -d --build
 ```
 
