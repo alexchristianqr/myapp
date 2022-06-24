@@ -1,8 +1,8 @@
 version: '3'
 
 services:
-  appvue:
-    image: appvue
+  appvuejs:
+    image: appvuejs
     build:
       context: .
     restart: always

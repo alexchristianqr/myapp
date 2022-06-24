@@ -1,8 +1,8 @@
 version: '3'
 
 services:
-  appmain:
-    image: appmain
+  appnodejs:
+    image: appnodejs
     build:
       context: .
     restart: always
