@@ -1,10 +1,8 @@
-FROM node:14-alpine AS server-build
+FROM node:16.15-alpine
 COPY . /usr/src/myapp/
 WORKDIR /usr/src/myapp/
-COPY ./package*.json ./myapp/
-RUN cd  myapp && npm install
-COPY ./index.js ./myapp/
+RUN npm install
 
 EXPOSE 3000
 
-CMD ["node", "./myapp/index.js"]
+CMD ["node", "index.js"]
