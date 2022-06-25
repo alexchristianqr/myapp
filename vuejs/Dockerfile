@@ -1,15 +1,14 @@
 # Server Ubuntu
 FROM ubuntu:latest as ubuntuServer
 USER root
-COPY ./vuejs/dist /myserver/www
+COPY . /myserver/www
 WORKDIR /myserver/www
-#RUN cd /myserver/www
-#RUN apt-get update
-#RUN apt-get -y install curl rsync python2.7 python-pip
-#RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
-#RUN apt-get -y install nestjs
-#RUN npm install
-#RUN npm run build
+RUN apt-get update
+RUN apt-get -y install curl rsync
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get -y install nodejs
+RUN npm install
+RUN npm run build
 
 # Server Nginx
 FROM nginx:stable-alpine as nginxServer

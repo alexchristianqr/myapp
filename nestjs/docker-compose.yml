@@ -1,0 +1,10 @@
+version: '3.9'
+
+services:
+  appnestjs:
+    image: appnestjs
+    build:
+      context: .
+    restart: always
+    ports:
+      - '80:3000'

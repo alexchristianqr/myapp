@@ -1,27 +1,32 @@
 # Myapp
 Example of nodejs backend with express.
 
-## Running with Docker
+## Running with docker - nestjs
 ```bash
-cd myapp
-vue create vuejs
-nest new nestjs
-```
+# Carpeta root
+cd myapp/nestjs
 
-```bash
 # Crear imagen con docker
 docker build -t myapp .
 
-# Crear contenedor a partir de una imagen con docker en el puerto 3000
-docker run -dp 3000:3000 myapp # para aWppnodejs
-docker run -dp 80:80 myapp # para appvuejs
+# Crear contenedor a partir de una imagen
+docker run -dp 80:3000 myapp # para appnestjs
+
+# Crear imagen y contenedor con docker-compose
+docker-compose up -d --build
+```
+
+## Running with docker - vuejs
+```bash
+# Carpeta root
+cd myapp/vuejs
 
 # Crear imagen con docker
-docker-compose up -d --build
+docker build -t myapp .
 
-# Secuencia de comandos ECR de AWS
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 073746111526.dkr.ecr.us-east-1.amazonaws.com
-docker build -t vuenodejs .
-docker tag vuenodejs:latest 073746111526.dkr.ecr.us-east-1.amazonaws.com/vuenodejs:latest
-docker push 073746111526.dkr.ecr.us-east-1.amazonaws.com/vuenodejs:latest
+# Crear contenedor a partir de una imagen
+docker run -dp 80:80 myapp # para appvuejs
+
+# Crear imagen y contenedor con docker-compose
+docker-compose up -d --build
 ```
