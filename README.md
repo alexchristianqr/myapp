@@ -3,11 +3,17 @@ Example of nodejs backend with express.
 
 ## Running with Docker
 ```bash
+cd myapp
+vue create vuejs
+nest new nestjs
+```
+
+```bash
 # Crear imagen con docker
 docker build -t myapp .
 
 # Crear contenedor a partir de una imagen con docker en el puerto 3000
-docker run -dp 3000:3000 myapp # para appnodejs
+docker run -dp 3000:3000 myapp # para aWppnodejs
 docker run -dp 80:80 myapp # para appvuejs
 
 # Crear imagen con docker

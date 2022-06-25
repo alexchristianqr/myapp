@@ -1,5 +1,6 @@
 documentation
-node_modules
+/vuejs/node_modules/
+/nestjs/node_modules/
 dist
 /documentation/*
 /node_modules/*
