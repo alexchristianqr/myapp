@@ -18,23 +18,6 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to the API" });
 });
 
-app.get("/users/:id", (req, res) => {
-  let userId = req.params.id;
-  let result = {};
-
-  if (userId) {
-    let queryUser = (item) => item.id == userId;
-    result = dataUsers.find(queryUser);
-  }
-
-  // Response
-  res.json({
-    success: true,
-    message: "user founded",
-    result,
-  });
-});
-
 app.get("/users", (req, res) => {
   let payload = req.query;
   let result = [];
@@ -56,6 +39,23 @@ app.get("/users", (req, res) => {
   res.json({
     success: true,
     message: "users filtered",
+    result,
+  });
+});
+
+app.get("/users/:id", (req, res) => {
+  let userId = req.params.id;
+  let result = {};
+
+  if (userId) {
+    let queryUser = (item) => item.id.toString() === userId.toString();
+    result = dataUsers.find(queryUser);
+  }
+
+  // Response
+  res.json({
+    success: true,
+    message: "user founded",
     result,
   });
 });
@@ -82,7 +82,9 @@ app.put("/users/:id", (req, res) => {
   let userId = req.params.id;
   let payload = req.body;
 
-  const user = dataUsers.find((item) => item.id == userId);
+  const user = dataUsers.find(
+    (item) => item.id.toString() === userId.toString()
+  );
   if (!user) throw new Error("No se encontro el usuario");
   user.fullName = payload.fullName;
   // user.email = payload.email;
