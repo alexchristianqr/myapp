@@ -82,17 +82,37 @@ app.put("/users/:id", (req, res) => {
   let userId = req.params.id;
   let payload = req.body;
 
-  const user = dataUsers.find(
-    (item) => item.id.toString() === userId.toString()
-  );
+  let user = dataUsers.find((item) => item.id.toString() === userId.toString());
   if (!user) throw new Error("No se encontro el usuario");
-  user.fullName = payload.fullName;
-  // user.email = payload.email;
+  for (let item in user) {
+    if (!item || item === "id") continue;
+    user[item] = payload[item];
+  }
 
   // Response
   res.json({
     success: true,
     message: "user updated",
+    result: user,
+  });
+});
+
+app.patch("/users/:id", (req, res) => {
+  let userId = req.params.id;
+  let payload = req.body;
+
+  let user = dataUsers.find((item) => item.id.toString() === userId.toString());
+  if (!user) throw new Error("No se encontro el usuario");
+  for (let item in user) {
+    const field = Object.keys(payload).find((subitem) => subitem === item);
+    if (!field || field === "id") continue;
+    user[field] = payload[field];
+  }
+
+  // Response
+  res.json({
+    success: true,
+    message: "user updated field",
     result: user,
   });
 });
