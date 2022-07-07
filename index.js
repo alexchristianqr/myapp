@@ -20,7 +20,7 @@ app.get("/", (req, res) => {
 
 app.get("/users", (req, res) => {
   let payload = req.query;
-  let result = [];
+  let result;
 
   if (payload.search) {
     const queryUser = (item) => {
