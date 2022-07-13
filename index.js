@@ -186,7 +186,7 @@ app.post("/signup/confirm", (req, res) => {
   };
   let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
 
-  // Confirmar registro de nuevo usuario
+  // Confirmar codigo de verificación
   cognitoUser.confirmRegistration(
     payload.codeVerification,
     true,
@@ -206,6 +206,45 @@ app.post("/signup/confirm", (req, res) => {
       });
     }
   );
+});
+
+app.post("/signup/resend", (req, res) => {
+  // Set request
+  const payload = req.body;
+  if (!payload.email) {
+    return res.json({ message: "Faltan parametros" });
+  }
+
+  // Validar grupo de usuario en AWS cognito
+  const poolData = {
+    UserPoolId: idGroupCognito, // Your user pool id here
+    ClientId: idAppClientCognito, // Your client id here
+  };
+  const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+  // Validar usuario en AWS cognito
+  let userData = {
+    Username: payload.email,
+    Pool: userPool,
+  };
+  let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+  // Reenviar código de verificación
+  cognitoUser.resendConfirmationCode(function (err, result) {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err,
+      });
+    }
+
+    // Response
+    return res.json({
+      success: true,
+      message: "Sent confirm code for new user registered",
+      result: result,
+    });
+  });
 });
 
 // TODO: private routes
