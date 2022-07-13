@@ -249,11 +249,40 @@ app.post("/signup/resend", (req, res) => {
 
 // TODO: private routes
 
-const authBearerToken = () => {};
+const authBearerToken = (req) => {
+  // require.hea
+};
 
 app.post("/logout", (req, res) => {
-  // Response
-  res.json({ message: "Welcome to the API" });
+  // Set request
+  const payload = req.body;
+  if (!payload.email || !payload.password) {
+    res.json({ message: "Faltan parametros" });
+  }
+
+  // Validar grupo de usuario en AWS cognito
+  let poolData = {
+    UserPoolId: idGroupCognito, // Your user pool id here
+    ClientId: idAppClientCognito, // Your client id here
+  };
+  let userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+  // Validar usuario en AWS cognito
+  let userData = {
+    Username: payload.email,
+    Pool: userPool,
+  };
+  let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+  // Cerrar sesión
+  cognitoUser.signOut(() => {
+    // Response
+    return res.json({
+      success: true,
+      message: "Logout user",
+    });
+  });
+  // cognitoUser.globalSignOut();
 });
 
 app.get("/users", (req, res) => {
