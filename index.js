@@ -10,10 +10,159 @@ const dataUsers = [
   },
 ];
 
+const AWS = require("aws-sdk");
+const AmazonCognitoIdentity = require("amazon-cognito-identity-js");
+const CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
+const idGroupCognito = "us-east-1_CLt3LBEVl";
+const idAppClientCognito = "5oqodu3j7jio2uvmcmd4dh874g";
+const regionUS = "us-east-1";
+
 app.use(bodyParser.json());
 app.use(morgan("dev"));
 
+// TODO: public routes
+
 app.get("/", (req, res) => {
+  // Response
+  res.json({ message: "Welcome to the API" });
+});
+
+app.post("/login", (req, res) => {
+  // Set request
+  const payload = req.body;
+  if (!payload.email || !payload.password) {
+    res.json({ message: "Faltan parametros" });
+  }
+
+  // Validar identidad de los datos en AWS
+  let authenticationData = {
+    Username: payload.email,
+    Password: payload.password,
+  };
+  let authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(
+    authenticationData
+  );
+
+  // Validar grupo de usuario en AWS cognito
+  let poolData = {
+    UserPoolId: idGroupCognito, // Your user pool id here
+    ClientId: idAppClientCognito, // Your client id here
+  };
+  let userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+  // Validar usuario en AWS cognito
+  let userData = {
+    Username: payload.email,
+    Pool: userPool,
+  };
+  let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+  // Iniciar sesion con AWS Cognito
+  cognitoUser.authenticateUser(authenticationDetails, {
+    onSuccess: function (result) {
+      let accessToken = result.getAccessToken().getJwtToken();
+      console.log({ accessToken });
+
+      //POTENTIAL: Region needs to be set if not already set previously elsewhere.
+      AWS.config.region = `${regionUS}`;
+
+      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+        IdentityPoolId: idGroupCognito.toString(), // your identity pool id here
+        Logins: {
+          // Change the key below according to the specific region your user pool is in.
+          "cognito-idp.<region>.amazonaws.com/<YOUR_USER_POOL_ID>": result
+            .getIdToken()
+            .getJwtToken(),
+        },
+      });
+
+      //refreshes credentials using AWS.CognitoIdentity.getCredentialsForIdentity()
+      AWS.config.credentials.refresh((error) => {
+        if (error) {
+          console.error(error);
+        } else {
+          // Instantiate aws sdk service objects now that the credentials have been updated.
+          res.json({
+            success: true,
+            message: "Logged in access token updated",
+            result: result,
+          });
+        }
+      });
+      res.json({
+        success: true,
+        message: "Logged in new access token",
+        result: result,
+      });
+    },
+    onFailure: function (err) {
+      res.json({
+        success: false,
+        message: err,
+      });
+    },
+  });
+});
+
+app.post("/signup", (req, res) => {
+  // Set request
+  const payload = req.body;
+  if (!payload.email || !payload.password) {
+    res.json({ message: "Faltan parametros" });
+  }
+
+  // Validar grupo de usuario en AWS cognito
+  const poolData = {
+    UserPoolId: idGroupCognito, // Your user pool id here
+    ClientId: idAppClientCognito, // Your client id here
+  };
+  const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+  const attributeList = [];
+
+  const dataEmail = {
+    Name: "email",
+    Value: payload.email,
+  };
+
+  // const dataPhoneNumber = {
+  //   Name: "phone_number",
+  //   Value: "+15555555555",
+  // };
+  const attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(
+    dataEmail
+  );
+  // const attributePhoneNumber = new AmazonCognitoIdentity.CognitoUserAttribute(
+  //   dataPhoneNumber
+  // );
+
+  attributeList.push(attributeEmail);
+  // attributeList.push(attributePhoneNumber);
+
+  userPool.signUp(
+    "username",
+    "password",
+    attributeList,
+    null,
+    function (err, result) {
+      if (err) {
+        alert(err.message || JSON.stringify(err));
+        return;
+      }
+      const cognitoUser = result.user;
+      console.log("user name is " + cognitoUser.getUsername());
+    }
+  );
+
+  // Response
+  // res.json({ message: "Welcome to the API" });
+});
+
+// TODO: private routes
+
+const authBearerToken = () => {};
+
+app.post("/logout", (req, res) => {
   // Response
   res.json({ message: "Welcome to the API" });
 });

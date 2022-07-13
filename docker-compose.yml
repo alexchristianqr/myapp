@@ -1,10 +1,10 @@
 version: '3'
 
 services:
-  appvuejs:
-    image: appvuejs
+  appnodejs:
+    image: appnodejs
     build:
       context: .
     restart: always
     ports:
-      - '80:80'
+      - '3000:3000'
