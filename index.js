@@ -247,6 +247,84 @@ app.post("/signup/resend", (req, res) => {
   });
 });
 
+app.get("/auth/user", (req, res) => {
+  // Set request
+  const payload = req.query;
+  if (!payload.email || !payload.password) {
+    res.json({ message: "Faltan parametros" });
+  }
+
+  // Validar grupo de usuario en AWS cognito
+  let poolData = {
+    UserPoolId: idGroupCognito, // Your user pool id here
+    ClientId: idAppClientCognito, // Your client id here
+  };
+  let userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+  // Validar usuario en AWS cognito
+  let userData = {
+    Username: payload.email,
+    Pool: userPool,
+  };
+  let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+  // Obtener datos de usuario autenticado
+  cognitoUser.getUserAttributes(function (err, result) {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err,
+      });
+    }
+
+    // Response
+    return res.json({
+      success: true,
+      message: "user attributes",
+      result: result,
+    });
+  });
+});
+
+app.delete("/auth/user", (req, res) => {
+  // Set request
+  const payload = req.body;
+  if (!payload.email || !payload.password) {
+    res.json({ message: "Faltan parametros" });
+  }
+
+  // Validar grupo de usuario en AWS cognito
+  let poolData = {
+    UserPoolId: idGroupCognito, // Your user pool id here
+    ClientId: idAppClientCognito, // Your client id here
+  };
+  let userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+  // Validar usuario en AWS cognito
+  let userData = {
+    Username: payload.email,
+    Pool: userPool,
+  };
+  let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+  // Eliminar usuario
+  cognitoUser.deleteUser(function (err, result) {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err,
+      });
+    }
+
+    // Response
+    return res.json({
+      success: true,
+      message: "user deleted",
+      result: result,
+    });
+  });
+});
+
 // TODO: private routes
 
 const authBearerToken = (req) => {
