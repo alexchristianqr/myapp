@@ -22,6 +22,10 @@ app.use(morgan("dev"));
 
 // TODO: public routes
 
+/*
+  https://github.com/aws-amplify/amplify-js/tree/main/packages/amazon-cognito-identity-js
+ */
+
 app.get("/", (req, res) => {
   // Response
   res.json({ message: "Welcome to the API" });
@@ -60,8 +64,8 @@ app.post("/login", (req, res) => {
   // Iniciar sesion con AWS Cognito
   cognitoUser.authenticateUser(authenticationDetails, {
     onSuccess: function (result) {
-      let accessToken = result.getAccessToken().getJwtToken();
-      console.log({ accessToken });
+      // let accessToken = result.getAccessToken().getJwtToken();
+      // console.log({ accessToken });
 
       //POTENTIAL: Region needs to be set if not already set previously elsewhere.
       AWS.config.region = `${regionUS}`;
@@ -79,7 +83,10 @@ app.post("/login", (req, res) => {
       //refreshes credentials using AWS.CognitoIdentity.getCredentialsForIdentity()
       AWS.config.credentials.refresh((error) => {
         if (error) {
-          console.error(error);
+          res.status(403).json({
+            success: false,
+            message: error,
+          });
         } else {
           // Instantiate aws sdk service objects now that the credentials have been updated.
           res.json({
@@ -89,6 +96,8 @@ app.post("/login", (req, res) => {
           });
         }
       });
+
+      // Response
       res.json({
         success: true,
         message: "Logged in new access token",
@@ -96,7 +105,7 @@ app.post("/login", (req, res) => {
       });
     },
     onFailure: function (err) {
-      res.json({
+      res.status(401).json({
         success: false,
         message: err,
       });
@@ -108,7 +117,7 @@ app.post("/signup", (req, res) => {
   // Set request
   const payload = req.body;
   if (!payload.email || !payload.password) {
-    res.json({ message: "Faltan parametros" });
+    return res.json({ message: "Faltan parametros" });
   }
 
   // Validar grupo de usuario en AWS cognito
@@ -120,42 +129,40 @@ app.post("/signup", (req, res) => {
 
   const attributeList = [];
 
-  const dataEmail = {
+  // Set datos del nuevo usuario
+  const attributeName = new AmazonCognitoIdentity.CognitoUserAttribute({
+    Name: "name",
+    Value: payload.fullName,
+  });
+  const attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute({
     Name: "email",
     Value: payload.email,
-  };
-
-  // const dataPhoneNumber = {
-  //   Name: "phone_number",
-  //   Value: "+15555555555",
-  // };
-  const attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(
-    dataEmail
-  );
-  // const attributePhoneNumber = new AmazonCognitoIdentity.CognitoUserAttribute(
-  //   dataPhoneNumber
-  // );
-
+  });
+  attributeList.push(attributeName);
   attributeList.push(attributeEmail);
-  // attributeList.push(attributePhoneNumber);
 
+  // Registrar nuevo usuario y enviar codigo de confirmación
   userPool.signUp(
-    "username",
-    "password",
+    payload.email.toString(),
+    payload.password.toString(),
     attributeList,
     null,
     function (err, result) {
       if (err) {
-        alert(err.message || JSON.stringify(err));
-        return;
+        return res.status(400).json({
+          success: false,
+          message: err,
+        });
       }
-      const cognitoUser = result.user;
-      console.log("user name is " + cognitoUser.getUsername());
+
+      // Response
+      return res.json({
+        success: true,
+        message: "Registered new user",
+        result: result.user,
+      });
     }
   );
-
-  // Response
-  // res.json({ message: "Welcome to the API" });
 });
 
 // TODO: private routes
