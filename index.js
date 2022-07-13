@@ -165,6 +165,49 @@ app.post("/signup", (req, res) => {
   );
 });
 
+app.post("/signup/confirm", (req, res) => {
+  // Set request
+  const payload = req.body;
+  if (!payload.email || !payload.codeVerification) {
+    return res.json({ message: "Faltan parametros" });
+  }
+
+  // Validar grupo de usuario en AWS cognito
+  const poolData = {
+    UserPoolId: idGroupCognito, // Your user pool id here
+    ClientId: idAppClientCognito, // Your client id here
+  };
+  const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+  // Validar usuario en AWS cognito
+  let userData = {
+    Username: payload.email,
+    Pool: userPool,
+  };
+  let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+  // Confirmar registro de nuevo usuario
+  cognitoUser.confirmRegistration(
+    payload.codeVerification,
+    true,
+    function (err, result) {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err,
+        });
+      }
+
+      // Response
+      return res.json({
+        success: true,
+        message: "Confirmed user registered",
+        result: result,
+      });
+    }
+  );
+});
+
 // TODO: private routes
 
 const authBearerToken = () => {};
