@@ -12,7 +12,7 @@ const dataUsers = [
 
 const AWS = require("aws-sdk");
 const AmazonCognitoIdentity = require("amazon-cognito-identity-js");
-const CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
+// const CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
 const idGroupCognito = "us-east-1_CLt3LBEVl";
 const idAppClientCognito = "5oqodu3j7jio2uvmcmd4dh874g";
 const regionUS = "us-east-1";
@@ -35,7 +35,7 @@ app.post("/login", (req, res) => {
   // Set request
   const payload = req.body;
   if (!payload.email || !payload.password) {
-    res.json({ message: "Faltan parametros" });
+    return res.status(400).json({ message: "Faltan parametros" });
   }
 
   // Validar identidad de los datos en AWS
@@ -62,54 +62,26 @@ app.post("/login", (req, res) => {
   let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
 
   // Iniciar sesion con AWS Cognito
-  cognitoUser.authenticateUser(authenticationDetails, {
-    onSuccess: function (result) {
-      // let accessToken = result.getAccessToken().getJwtToken();
-      // console.log({ accessToken });
-
-      //POTENTIAL: Region needs to be set if not already set previously elsewhere.
-      AWS.config.region = `${regionUS}`;
-
-      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: idGroupCognito.toString(), // your identity pool id here
-        Logins: {
-          // Change the key below according to the specific region your user pool is in.
-          "cognito-idp.<region>.amazonaws.com/<YOUR_USER_POOL_ID>": result
-            .getIdToken()
-            .getJwtToken(),
-        },
-      });
-
-      //refreshes credentials using AWS.CognitoIdentity.getCredentialsForIdentity()
-      AWS.config.credentials.refresh((error) => {
-        if (error) {
-          res.status(403).json({
-            success: false,
-            message: error,
-          });
-        } else {
-          // Instantiate aws sdk service objects now that the credentials have been updated.
-          res.json({
-            success: true,
-            message: "Logged in access token updated",
-            result: result,
-          });
-        }
-      });
-
+  return cognitoUser.authenticateUser(authenticationDetails, {
+    onSuccess: (result) => {
       // Response
-      res.json({
+      return res.status(200).json({
         success: true,
         message: "Logged in new access token",
         result: result,
       });
     },
-    onFailure: function (err) {
-      res.status(401).json({
+    onFailure: (err) => {
+      return res.status(400).json({
         success: false,
         message: err,
       });
     },
+    // mfaRequired: function(codeDeliveryDetails) {
+    //   // MFA is required to complete user authentication.
+    //   // Get the code from user and call
+    //   cognitoUser.sendMFACode(payload.mfaCodeVerification, this)
+    // },
   });
 });
 
@@ -117,7 +89,7 @@ app.post("/signup", (req, res) => {
   // Set request
   const payload = req.body;
   if (!payload.email || !payload.password) {
-    return res.json({ message: "Faltan parametros" });
+    return res.status(400).json({ message: "Faltan parametros" });
   }
 
   // Validar grupo de usuario en AWS cognito
@@ -156,7 +128,7 @@ app.post("/signup", (req, res) => {
       }
 
       // Response
-      return res.json({
+      return res.status(200).json({
         success: true,
         message: "Registered new user",
         result: result.user,
@@ -169,7 +141,7 @@ app.post("/signup/confirm", (req, res) => {
   // Set request
   const payload = req.body;
   if (!payload.email || !payload.codeVerification) {
-    return res.json({ message: "Faltan parametros" });
+    return res.status(400).json({ message: "Faltan parametros" });
   }
 
   // Validar grupo de usuario en AWS cognito
@@ -199,7 +171,7 @@ app.post("/signup/confirm", (req, res) => {
       }
 
       // Response
-      return res.json({
+      return res.status(200).json({
         success: true,
         message: "Confirmed user registered",
         result: result,
@@ -212,7 +184,7 @@ app.post("/signup/resend", (req, res) => {
   // Set request
   const payload = req.body;
   if (!payload.email) {
-    return res.json({ message: "Faltan parametros" });
+    return res.status(400).json({ message: "Faltan parametros" });
   }
 
   // Validar grupo de usuario en AWS cognito
@@ -239,7 +211,7 @@ app.post("/signup/resend", (req, res) => {
     }
 
     // Response
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "Sent confirm code for new user registered",
       result: result,
@@ -251,7 +223,7 @@ app.get("/auth/user", (req, res) => {
   // Set request
   const payload = req.query;
   if (!payload.email || !payload.password) {
-    res.json({ message: "Faltan parametros" });
+    res.status(400).json({ message: "Faltan parametros" });
   }
 
   // Validar grupo de usuario en AWS cognito
@@ -278,7 +250,7 @@ app.get("/auth/user", (req, res) => {
     }
 
     // Response
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "user attributes",
       result: result,
@@ -290,7 +262,7 @@ app.delete("/auth/user", (req, res) => {
   // Set request
   const payload = req.body;
   if (!payload.email || !payload.password) {
-    res.json({ message: "Faltan parametros" });
+    res.status(400).json({ message: "Faltan parametros" });
   }
 
   // Validar grupo de usuario en AWS cognito
@@ -317,7 +289,7 @@ app.delete("/auth/user", (req, res) => {
     }
 
     // Response
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "user deleted",
       result: result,
@@ -327,15 +299,11 @@ app.delete("/auth/user", (req, res) => {
 
 // TODO: private routes
 
-const authBearerToken = (req) => {
-  // require.hea
-};
-
 app.post("/logout", (req, res) => {
   // Set request
   const payload = req.body;
   if (!payload.email || !payload.password) {
-    res.json({ message: "Faltan parametros" });
+    res.status(400).json({ message: "Faltan parametros" });
   }
 
   // Validar grupo de usuario en AWS cognito
@@ -355,7 +323,7 @@ app.post("/logout", (req, res) => {
   // Cerrar sesión
   cognitoUser.signOut(() => {
     // Response
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "Logout user",
     });
@@ -381,7 +349,7 @@ app.get("/users", (req, res) => {
   }
 
   // Response
-  res.json({
+  res.status(200).json({
     success: true,
     message: "users filtered",
     result,
@@ -398,7 +366,7 @@ app.get("/users/:id", (req, res) => {
   }
 
   // Response
-  res.json({
+  res.status(200).json({
     success: true,
     message: "user founded",
     result,
@@ -416,7 +384,7 @@ app.post("/users", (req, res) => {
   });
 
   // Response
-  res.json({
+  res.status(200).json({
     success: true,
     message: "user created",
     result: dataUsers,
@@ -435,7 +403,7 @@ app.put("/users/:id", (req, res) => {
   }
 
   // Response
-  res.json({
+  res.status(200).json({
     success: true,
     message: "user updated",
     result: user,
@@ -455,7 +423,7 @@ app.patch("/users/:id", (req, res) => {
   }
 
   // Response
-  res.json({
+  res.status(200).json({
     success: true,
     message: "user updated field",
     result: user,
